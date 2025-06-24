@@ -20,7 +20,7 @@
             <div>
                 <label class="block text-sm font-medium">Device ID</label>
                 <select name="device_id" class="border mt-2 p-2 w-full rounded border-gray-200" required>
-                    @forelse($deviceIds as $id)
+                    @forelse($device_id as $id)
                         <option value="{{ $id }}">{{ $id }}</option>
                     @empty
                         <option disabled>Belum ada perangkat terkalibrasi</option>

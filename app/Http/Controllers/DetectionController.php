@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calibration;
 use App\Models\InferenceResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -9,12 +10,9 @@ use Illuminate\Support\Facades\Http;
 class DetectionController extends Controller
 {
     public function form() {
-        $deviceIds = \App\Models\InferenceResult::select('device_id')
-            ->distinct()
-            ->orderBy('device_id')
-            ->pluck('device_id');
+        $device_id = Calibration::pluck('device_id');
 
-        return view('detect.form', compact('deviceIds'));
+        return view('detect.form', compact('device_id'));
     }
 
     public function infer(Request $request)
@@ -67,17 +65,33 @@ class DetectionController extends Controller
             'image' => 'required|image',
         ]);
 
-        $response = Http::attach(
-            'image', file_get_contents($request->file('image')), $request->file('image')->getClientOriginalName()
-        )->asMultipart()->post('http://localhost:8080/calibrate', [
-            ['name' => 'device_id', 'contents' => $request->device_id],
-            ['name' => 'total_cm', 'contents' => $request->total_cm],
-        ]);
+        try {
+            $response = Http::attach(
+                'image',
+                file_get_contents($request->file('image')),
+                $request->file('image')->getClientOriginalName()
+            )->asMultipart()->post('http://localhost:8080/calibrate', [
+                ['name' => 'device_id', 'contents' => $request->device_id],
+                ['name' => 'total_cm', 'contents' => $request->total_cm],
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghubungi server model: ' . $e->getMessage());
+        }
 
         if (!$response->successful()) {
             return back()->with('error', $response->json()['error'] ?? 'Gagal mengkalibrasi perangkat.');
         }
 
-        return redirect()->route('detect.form')->with('success', 'Kalibrasi berhasil disimpan untuk device: ' . $request->device_id);
+        $data = $response->json();
+
+        // Simpan atau perbarui data kalibrasi
+        Calibration::Create(
+            [
+                'device_id' => $data['device_id'],
+                'total_cm' => $data['total_cm0'],
+            ]
+        );
+
+        return redirect()->route('detect.form')->with('success', 'Kalibrasi berhasil disimpan untuk device: ' . $data['device_id']);
     }
 }
