@@ -11,7 +11,8 @@
                     <tr>
                         <th class="px-4 py-2">Waktu</th>
                         <th class="px-4 py-2">Device</th>
-                        <th class="px-4 py-2">Tinggi (cm)</th>
+                        <th class="px-4 py-2">Plant Today (cm)</th>
+                        <th class="px-4 py-2">Tinggi total(cm)</th>
                         <th class="px-4 py-2">Scale</th>
                         <th class="px-4 py-2">BBox</th>
                     </tr>
@@ -22,6 +23,7 @@
                             <td class="px-4 py-2">{{ $row->created_at->format('Y-m-d H:i') }}</td>
                             <td class="px-4 py-2">{{ $row->device_id }}</td>
                             <td class="px-4 py-2">{{ $row->plant_cm_today }} cm</td>
+                            <td class="px-4 py-2">{{ $row->total_cm_today }} cm</td>
                             <td class="px-4 py-2">{{ $row->scale_cm_px }}</td>
                             <td class="px-4 py-2 text-xs text-gray-500">{{ json_encode($row->bbox_xyxy) }}</td>
                         </tr>
